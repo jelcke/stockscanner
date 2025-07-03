@@ -1,0 +1,84 @@
+"""
+System constants and default configuration values
+"""
+
+# IB Connection defaults
+IB_DEFAULT_HOST = "127.0.0.1"
+IB_DEFAULT_PORT_PAPER = 7497  # Paper trading
+IB_DEFAULT_PORT_LIVE = 7496  # Live trading
+IB_DEFAULT_CLIENT_ID = 10
+IB_MAX_RECONNECT_ATTEMPTS = 5
+IB_RECONNECT_MAX_WAIT = 60  # seconds
+
+# Market data constants
+MARKET_DATA_TYPE_DELAYED = 3  # Free delayed data (15-20 min)
+MARKET_DATA_TYPE_FROZEN = 2  # Frozen data
+MARKET_DATA_TYPE_REALTIME = 1  # Real-time data (requires subscription)
+
+# Rate limiting
+IB_RATE_LIMIT_PER_SECOND = 50
+IB_RATE_LIMIT_WINDOW = 1.0  # seconds
+
+# Market data lines
+MAX_MARKET_DATA_LINES_STANDARD = 100
+MAX_MARKET_DATA_LINES_PRO = 10000
+
+# Cache settings
+CACHE_DEFAULT_TTL = 300  # 5 minutes
+CACHE_MAX_SIZE = 1000
+
+# Database settings
+DB_DEFAULT_PATH = "data/scanner.db"
+DB_POOL_SIZE = 5
+DB_MAX_OVERFLOW = 10
+
+# Scanning defaults
+DEFAULT_SCAN_INTERVAL = 60  # seconds
+DEFAULT_MAX_RESULTS = 100
+DEFAULT_UNIVERSE = "US_STOCKS"
+
+# ML Model settings
+MODEL_INFERENCE_TIMEOUT = 0.1  # 100ms max
+MODEL_DEFAULT_CONFIDENCE_THRESHOLD = 0.65
+
+# Alert settings
+ALERT_DEDUP_WINDOW_MINUTES = 5
+ALERT_HISTORY_MAX_SIZE = 1000
+
+# Display settings
+DISPLAY_UPDATE_INTERVAL = 1.0  # seconds
+DISPLAY_MAX_ROWS = 50
+
+# Logging
+LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+LOG_DEFAULT_LEVEL = "INFO"
+
+# Timezone
+DEFAULT_TIMEZONE = "UTC"
+
+# API Keys environment variable names
+ENV_IB_HOST = "IB_HOST"
+ENV_IB_PORT = "IB_PORT"
+ENV_NEWS_API_KEY = "NEWS_API_KEY"
+ENV_REDDIT_CLIENT_ID = "REDDIT_CLIENT_ID"
+ENV_REDDIT_CLIENT_SECRET = "REDDIT_CLIENT_SECRET"
+ENV_REDIS_URL = "REDIS_URL"
+ENV_TELEGRAM_BOT_TOKEN = "TELEGRAM_BOT_TOKEN"
+ENV_TELEGRAM_CHAT_ID = "TELEGRAM_CHAT_ID"
+
+# Validation constants
+MIN_PRICE = 0.01
+MAX_PRICE = 999999.99
+MIN_VOLUME = 0
+MAX_VOLUME = 999999999999
+
+# Technical indicator periods
+DEFAULT_SMA_PERIODS = [20, 50, 200]
+DEFAULT_EMA_PERIODS = [9, 21, 50]
+DEFAULT_RSI_PERIOD = 14
+DEFAULT_MACD_FAST = 12
+DEFAULT_MACD_SLOW = 26
+DEFAULT_MACD_SIGNAL = 9
+DEFAULT_BB_PERIOD = 20
+DEFAULT_BB_STD = 2
+DEFAULT_ATR_PERIOD = 14

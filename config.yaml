@@ -1,0 +1,141 @@
+# IB Stock Scanner Configuration
+# ==============================
+
+# Interactive Brokers Connection
+ib_connection:
+  host: "127.0.0.1"
+  port: 7497  # 7497 for paper trading, 7496 for live
+  client_id: 10
+  timeout: 30
+  max_reconnect_attempts: 5
+  use_delayed_data: true  # Use free delayed data
+  
+# Scanner Settings
+scanner:
+  default_universe: "US_STOCKS"
+  max_results: 100
+  scan_interval: 60  # seconds
+  data_update_interval: 5  # seconds
+  max_market_data_lines: 100  # Standard account limit
+  
+# Scanning Criteria (can define multiple)
+criteria:
+  - type: "price"
+    name: "Price Filter"
+    min_price: 10.0
+    max_price: 500.0
+    min_change_pct: 1.0
+    
+  - type: "volume"
+    name: "Volume Filter"
+    min_volume: 100000
+    volume_surge_multiple: 2.0
+    
+  - type: "momentum"
+    name: "Momentum Filter"
+    rsi_min: 30
+    rsi_max: 70
+    
+# Technical Indicators Configuration
+indicators:
+  sma_periods: [20, 50, 200]
+  ema_periods: [9, 21, 50]
+  rsi_period: 14
+  macd_fast: 12
+  macd_slow: 26
+  macd_signal: 9
+  bb_period: 20
+  bb_std: 2
+  atr_period: 14
+  
+# Alert Settings
+alerts:
+  enabled: true
+  dedup_minutes: 5  # Don't repeat same alert within this time
+  
+  # Alert channels
+  email:
+    enabled: false
+    smtp_server: "smtp.gmail.com"
+    smtp_port: 587
+    from_address: "scanner@example.com"
+    to_addresses: ["trader@example.com"]
+    
+  telegram:
+    enabled: false
+    # bot_token and chat_id should be in .env file
+    
+  webhook:
+    enabled: false
+    url: "https://your-webhook-url.com/alerts"
+    
+  # Alert conditions
+  conditions:
+    volume_surge: 3.0      # Alert when volume > 3x average
+    price_change: 5.0      # Alert on 5% price move
+    rsi_oversold: 30       # Alert when RSI < 30
+    rsi_overbought: 70     # Alert when RSI > 70
+    
+# Data Storage
+database:
+  type: "sqlite"
+  path: "data/scanner.db"
+  pool_size: 5
+  max_overflow: 10
+  
+# Cache Settings
+cache:
+  enabled: true
+  ttl: 300  # 5 minutes default TTL
+  max_size: 1000
+  # redis_url should be in .env file
+  
+# Machine Learning
+ml:
+  models_directory: "models"
+  feature_window: 100  # days of history for features
+  min_confidence: 0.65  # Minimum confidence for predictions
+  
+  # Model specific settings
+  breakout:
+    enabled: true
+    model_file: "breakout_predictor.pkl"
+    retrain_days: 30
+    
+  pattern:
+    enabled: true
+    model_file: "pattern_detector.h5"
+    patterns: ["cup_handle", "triangle", "flag", "wedge"]
+    
+  sentiment:
+    enabled: true
+    model_file: "sentiment_analyzer.pkl"
+    sources: ["news", "reddit", "twitter"]
+    
+# Backtesting
+backtesting:
+  initial_capital: 100000
+  commission: 0.005  # per share
+  slippage: 0.001    # 0.1%
+  position_size: 0.1  # 10% of capital per position
+  max_positions: 10
+  stop_loss: 0.03     # 3%
+  take_profit: 0.10   # 10%
+  
+# Performance Settings
+performance:
+  num_workers: 4
+  batch_size: 50
+  max_memory_mb: 1024
+  
+# Logging
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # Log files
+  general_log: "logs/scanner.log"
+  trade_log: "logs/trades.log"
+  error_log: "logs/errors.log"
+  max_size_mb: 100
+  backup_count: 5

@@ -1,0 +1,9 @@
+README.md
+pyproject.toml
+ib_stock_scanner.egg-info/PKG-INFO
+ib_stock_scanner.egg-info/SOURCES.txt
+ib_stock_scanner.egg-info/dependency_links.txt
+ib_stock_scanner.egg-info/entry_points.txt
+ib_stock_scanner.egg-info/top_level.txt
+src/__init__.py
+src/main.py

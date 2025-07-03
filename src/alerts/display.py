@@ -12,7 +12,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from ..scanner.scanner import ScannerResult
+from ..scanner.models import ScannerResult
 
 
 class ScannerDisplay:

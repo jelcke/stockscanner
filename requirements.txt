@@ -32,7 +32,7 @@ seaborn>=0.11.0
 
 # Technical Analysis
 scipy>=1.9.0
-ta-lib>=0.4.0  # Optional, requires system library
+# ta-lib>=0.4.0  # Optional, requires system library (sudo apt-get install ta-lib)
 
 # API and Web
 requests>=2.28.0

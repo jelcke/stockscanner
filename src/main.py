@@ -192,7 +192,7 @@ def scan(settings, symbols, universe, criteria, continuous, interval, duration, 
             scan_criteria = [CriteriaPresets.technical_breakout()]
         else:
             # Load from config
-            scan_criteria = load_criteria_from_config(settings.config.dict())
+            scan_criteria = load_criteria_from_config(settings.config.model_dump())
 
         # Run scanner
         try:

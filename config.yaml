@@ -22,8 +22,8 @@ scanner:
 criteria:
   - type: "price"
     name: "Price Filter"
-    min_price: 10.0
-    max_price: 500.0
+    min_price: 1.0
+    max_price: 2000.0
     min_change_pct: 1.0
     
   - type: "volume"
@@ -58,8 +58,8 @@ alerts:
     enabled: false
     smtp_server: "smtp.gmail.com"
     smtp_port: 587
-    from_address: "scanner@example.com"
-    to_addresses: ["trader@example.com"]
+    from_address: "amstelbooks@gmail.com"
+    to_addresses: ["amstelbooks@gmail.com"]
     
   telegram:
     enabled: false

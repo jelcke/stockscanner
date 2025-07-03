@@ -65,7 +65,7 @@ class ScanResult(Base):
     breakout_probability = Column(Float)
     sentiment_score = Column(Float)
     alert_sent = Column(Boolean, default=False)
-    metadata = Column(JSON)  # Additional data as JSON
+    extra_data = Column(JSON)  # Additional data as JSON
 
     def __repr__(self):
         return f"<ScanResult(symbol='{self.symbol}', time='{self.scan_time}', change={self.change_pct}%)>"

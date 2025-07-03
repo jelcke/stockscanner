@@ -1,0 +1,220 @@
+# IB Stock Scanner Configuration
+# ==============================
+
+# Interactive Brokers Connection
+ib_connection:
+  host: "127.0.0.1"
+  port: 7497  # 7497 for paper trading, 7496 for live
+  client_id: 10
+  timeout: 30
+  
+# Scanner Settings
+scanner:
+  # Default universe to scan
+  default_universe: "US_STOCKS"
+  
+  # Available universes
+  universes:
+    US_STOCKS:
+      exchange: "SMART"
+      currency: "USD"
+      sec_type: "STK"
+      
+    ETF:
+      exchange: "SMART"
+      currency: "USD"
+      sec_type: "ETF"
+      
+    OPTIONS:
+      exchange: "SMART"
+      currency: "USD"
+      sec_type: "OPT"
+      
+  # Maximum results per scan
+  max_results: 100
+  
+  # Scan intervals (seconds)
+  scan_interval: 60
+  
+  # Data update frequency
+  data_update_interval: 5
+
+# Technical Indicators
+indicators:
+  # Moving averages
+  sma_periods: [20, 50, 200]
+  ema_periods: [9, 21, 50]
+  
+  # Momentum indicators
+  rsi_period: 14
+  macd_fast: 12
+  macd_slow: 26
+  macd_signal: 9
+  
+  # Volatility
+  bb_period: 20
+  bb_std: 2
+  atr_period: 14
+
+# Criteria Presets
+criteria_presets:
+  momentum:
+    - type: "price"
+      min: 10
+      max: 500
+    - type: "volume"
+      min_avg: 1000000
+    - type: "momentum"
+      rsi_min: 60
+      rsi_max: 80
+      
+  value:
+    - type: "price"
+      min: 5
+      max: 100
+    - type: "fundamental"
+      pe_max: 15
+      pb_max: 1.5
+      
+  breakout:
+    - type: "technical"
+      indicator: "price"
+      condition: "52w_high"
+      threshold: 0.95
+    - type: "volume"
+      surge_multiple: 2
+
+# Alert Settings
+alerts:
+  enabled: true
+  
+  # Alert channels
+  channels:
+    email:
+      enabled: false
+      smtp_server: "smtp.gmail.com"
+      smtp_port: 587
+      from_address: "scanner@example.com"
+      to_addresses: ["trader@example.com"]
+      
+    telegram:
+      enabled: false
+      bot_token: "YOUR_BOT_TOKEN"
+      chat_id: "YOUR_CHAT_ID"
+      
+    webhook:
+      enabled: false
+      url: "https://your-webhook-url.com/alerts"
+      
+  # Alert conditions
+  conditions:
+    volume_surge: 3.0  # 3x average volume
+    price_change: 0.05  # 5% move
+    rsi_oversold: 30
+    rsi_overbought: 70
+
+# Data Storage
+storage:
+  # Database for historical data
+  database:
+    type: "sqlite"
+    path: "data/scanner.db"
+    
+  # CSV export settings
+  csv_export:
+    enabled: true
+    directory: "exports"
+    
+  # Cache settings
+  cache:
+    enabled: true
+    ttl: 300  # 5 minutes
+    max_size: 1000
+
+# Performance Settings
+performance:
+  # Threading
+  num_workers: 4
+  
+  # Rate limiting
+  requests_per_minute: 60
+  
+  # Batch processing
+  batch_size: 50
+  
+  # Memory management
+  max_memory_mb: 1024
+
+# Logging
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # Log files
+  files:
+    - type: "general"
+      path: "logs/scanner.log"
+      max_size_mb: 100
+      backup_count: 5
+      
+    - type: "trades"
+      path: "logs/trades.log"
+      max_size_mb: 50
+      backup_count: 10
+      
+    - type: "errors"
+      path: "logs/errors.log"
+      level: "ERROR"
+
+# API Keys (for external services)
+api_keys:
+  # News sentiment
+  news_api: "YOUR_NEWS_API_KEY"
+  
+  # Social media sentiment
+  reddit_client_id: "YOUR_REDDIT_CLIENT_ID"
+  reddit_client_secret: "YOUR_REDDIT_SECRET"
+  
+  # Financial data
+  alpha_vantage: "YOUR_ALPHA_VANTAGE_KEY"
+  polygon: "YOUR_POLYGON_KEY"
+
+# Backtesting
+backtesting:
+  # Default settings
+  initial_capital: 100000
+  commission: 0.005  # per share
+  slippage: 0.001    # 0.1%
+  
+  # Position sizing
+  position_size: 0.1  # 10% of capital
+  max_positions: 10
+  
+  # Risk management
+  stop_loss: 0.03     # 3%
+  take_profit: 0.10   # 10%
+  
+  # Time periods
+  lookback_years: 2
+  
+# Machine Learning
+ml:
+  # Model settings
+  models_directory: "models"
+  
+  # Feature engineering
+  feature_window: 100  # days
+  
+  # Training
+  train_test_split: 0.8
+  validation_split: 0.2
+  
+  # Model parameters
+  random_forest:
+    n_estimators: 100
+    max_depth: 10
+    
+  xgboost:
+    learning_rate: 0.1
+    n_estimators: 100
+    max_depth: 6

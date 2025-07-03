@@ -1,0 +1,325 @@
+# ML Model Configuration
+# =====================
+
+# Feature Engineering
+features:
+  # Price-based features
+  price_features:
+    - name: "returns"
+      periods: [1, 5, 10, 20]
+      
+    - name: "log_returns"
+      periods: [1, 5, 10]
+      
+    - name: "price_position"
+      description: "Price position between high and low"
+      
+    - name: "distance_from_high"
+      periods: [20, 50]
+      
+    - name: "distance_from_low"
+      periods: [20, 50]
+  
+  # Volume features
+  volume_features:
+    - name: "volume_ratio"
+      description: "Current volume / average volume"
+      periods: [5, 10, 20]
+      
+    - name: "volume_trend"
+      description: "Volume moving average trend"
+      
+    - name: "dollar_volume"
+      description: "Price * Volume"
+  
+  # Technical indicators
+  technical_features:
+    - name: "rsi"
+      period: 14
+      
+    - name: "macd"
+      fast: 12
+      slow: 26
+      signal: 9
+      
+    - name: "bollinger_bands"
+      period: 20
+      std: 2
+      
+    - name: "atr"
+      period: 14
+      
+    - name: "adx"
+      period: 14
+      
+    - name: "stochastic"
+      k_period: 14
+      d_period: 3
+  
+  # Pattern features
+  pattern_features:
+    - name: "higher_highs"
+      lookback: 20
+      
+    - name: "lower_lows"
+      lookback: 20
+      
+    - name: "consolidation_score"
+      min_period: 10
+      
+    - name: "breakout_distance"
+      resistance_lookback: 20
+  
+  # Market features
+  market_features:
+    - name: "market_beta"
+      benchmark: "SPY"
+      
+    - name: "correlation_to_sector"
+      
+    - name: "relative_strength"
+      benchmark: "SPY"
+
+# Model Configurations
+models:
+  # Random Forest Classifier
+  random_forest:
+    type: "classifier"
+    
+    parameters:
+      n_estimators: 200
+      max_depth: 15
+      min_samples_split: 50
+      min_samples_leaf: 20
+      max_features: "sqrt"
+      class_weight: "balanced"
+      
+    hyperparameter_tuning:
+      n_estimators: [100, 200, 300]
+      max_depth: [10, 15, 20, null]
+      min_samples_split: [20, 50, 100]
+      min_samples_leaf: [10, 20, 50]
+  
+  # XGBoost
+  xgboost:
+    type: "classifier"
+    
+    parameters:
+      learning_rate: 0.1
+      n_estimators: 200
+      max_depth: 6
+      min_child_weight: 3
+      gamma: 0.1
+      subsample: 0.8
+      colsample_bytree: 0.8
+      objective: "binary:logistic"
+      scale_pos_weight: 1
+      
+    hyperparameter_tuning:
+      learning_rate: [0.01, 0.05, 0.1, 0.2]
+      n_estimators: [100, 200, 300]
+      max_depth: [4, 6, 8, 10]
+      min_child_weight: [1, 3, 5]
+      gamma: [0, 0.1, 0.2]
+  
+  # Neural Network
+  neural_network:
+    type: "classifier"
+    
+    architecture:
+      input_layer: "auto"  # Determined by features
+      
+      hidden_layers:
+        - units: 128
+          activation: "relu"
+          dropout: 0.3
+          
+        - units: 64
+          activation: "relu"
+          dropout: 0.2
+          
+        - units: 32
+          activation: "relu"
+          dropout: 0.1
+          
+      output_layer:
+        units: 1
+        activation: "sigmoid"
+    
+    training:
+      optimizer: "adam"
+      learning_rate: 0.001
+      loss: "binary_crossentropy"
+      metrics: ["accuracy", "auc"]
+      epochs: 100
+      batch_size: 32
+      validation_split: 0.2
+      early_stopping:
+        patience: 10
+        restore_best_weights: true
+  
+  # LSTM for time series
+  lstm:
+    type: "classifier"
+    
+    architecture:
+      sequence_length: 30
+      
+      layers:
+        - type: "lstm"
+          units: 100
+          return_sequences: true
+          dropout: 0.2
+          
+        - type: "lstm"
+          units: 50
+          dropout: 0.2
+          
+        - type: "dense"
+          units: 25
+          activation: "relu"
+          
+        - type: "dense"
+          units: 1
+          activation: "sigmoid"
+    
+    training:
+      optimizer: "adam"
+      learning_rate: 0.001
+      loss: "binary_crossentropy"
+      epochs: 50
+      batch_size: 64
+
+# Label Definitions
+labels:
+  # Breakout prediction
+  breakout:
+    type: "classification"
+    
+    positive_conditions:
+      - price_increase: 0.05  # 5% increase
+        time_window: 5        # within 5 days
+        
+      - break_resistance: true
+        volume_surge: 1.5     # 50% above average
+    
+    negative_conditions:
+      - price_decrease: 0.03  # 3% decrease
+        time_window: 5
+  
+  # Trend prediction
+  trend:
+    type: "multiclass"
+    
+    classes:
+      strong_uptrend:
+        min_return: 0.10
+        time_window: 20
+        
+      uptrend:
+        min_return: 0.05
+        time_window: 20
+        
+      sideways:
+        min_return: -0.02
+        max_return: 0.02
+        
+      downtrend:
+        max_return: -0.05
+        
+      strong_downtrend:
+        max_return: -0.10
+
+# Training Configuration
+training:
+  # Data splitting
+  train_test_split:
+    test_size: 0.2
+    shuffle: false  # Maintain time order
+    
+  # Cross validation
+  cross_validation:
+    type: "time_series_split"
+    n_splits: 5
+    
+  # Feature preprocessing
+  preprocessing:
+    scaling:
+      method: "standard"  # or "minmax", "robust"
+      
+    missing_values:
+      strategy: "drop"    # or "mean", "median", "forward_fill"
+      
+    outliers:
+      method: "iqr"
+      threshold: 3
+  
+  # Class balancing
+  balancing:
+    method: "smote"     # or "random_undersample", "class_weight"
+    sampling_strategy: "auto"
+
+# Evaluation Metrics
+evaluation:
+  classification_metrics:
+    - "accuracy"
+    - "precision"
+    - "recall"
+    - "f1_score"
+    - "roc_auc"
+    - "confusion_matrix"
+    
+  regression_metrics:
+    - "mse"
+    - "rmse"
+    - "mae"
+    - "r2_score"
+    
+  trading_metrics:
+    - "sharpe_ratio"
+    - "max_drawdown"
+    - "win_rate"
+    - "profit_factor"
+
+# Model Selection
+model_selection:
+  # Primary metric for selection
+  primary_metric: "roc_auc"
+  
+  # Minimum performance thresholds
+  thresholds:
+    accuracy: 0.6
+    precision: 0.6
+    recall: 0.5
+    
+  # Ensemble settings
+  ensemble:
+    enabled: true
+    method: "voting"      # or "stacking", "blending"
+    models: ["random_forest", "xgboost", "neural_network"]
+
+# Production Settings
+production:
+  # Model versioning
+  versioning:
+    enabled: true
+    format: "model_v{version}_{timestamp}"
+    
+  # Model monitoring
+  monitoring:
+    track_predictions: true
+    alert_on_drift: true
+    drift_threshold: 0.1
+    
+  # Retraining
+  retraining:
+    schedule: "weekly"
+    min_new_samples: 1000
+    performance_threshold: 0.05  # 5% degradation triggers retraining
+    
+  # A/B testing
+  ab_testing:
+    enabled: true
+    traffic_split: 0.1  # 10% to new model
+    min_samples: 1000
+    significance_level: 0.05

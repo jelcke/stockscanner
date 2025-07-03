@@ -146,12 +146,12 @@ class DataProcessor:
             # Validate ticker data
             ticker_dict = {
                 "symbol": symbol,
-                "last": ticker.last,
-                "volume": ticker.volume,
-                "bid": ticker.bid,
-                "ask": ticker.ask,
-                "high": ticker.high,
-                "low": ticker.low,
+                "last": ticker.last if ticker.last is not None else 0.0,
+                "volume": ticker.volume if ticker.volume is not None else 0,
+                "bid": ticker.bid if ticker.bid is not None else 0.0,
+                "ask": ticker.ask if ticker.ask is not None else 0.0,
+                "high": ticker.high if ticker.high is not None else 0.0,
+                "low": ticker.low if ticker.low is not None else 0.0,
             }
 
             is_valid, issues = self.validator.validate_ticker_data(ticker_dict)
@@ -194,24 +194,24 @@ class DataProcessor:
             # Create scan result
             result = ScannerResult(
                 symbol=symbol,
-                price=ticker.last,
-                volume=ticker.volume,
+                price=ticker.last if ticker.last is not None else 0.0,
+                volume=ticker.volume if ticker.volume is not None else 0,
                 change_pct=change_pct,
                 volume_ratio=volume_metrics.get("volume_ratio", 1.0),
                 technical_signals=technical_signals,
                 extra_data={
-                    "bid": ticker.bid,
-                    "ask": ticker.ask,
-                    "high": ticker.high,
-                    "low": ticker.low,
+                    "bid": ticker.bid if ticker.bid is not None else 0.0,
+                    "ask": ticker.ask if ticker.ask is not None else 0.0,
+                    "high": ticker.high if ticker.high is not None else 0.0,
+                    "low": ticker.low if ticker.low is not None else 0.0,
                     "prev_close": prev_close,
-                    "spread": ticker.ask - ticker.bid if ticker.bid and ticker.ask else None,
+                    "spread": (ticker.ask - ticker.bid) if ticker.bid and ticker.ask else None,
                     "volume_surge": volume_metrics.get("volume_surge", False),
                 },
             )
 
             # Save price data to database
-            # await self._save_price_data(result)  # TODO: Fix session issue
+            await self._save_price_data(result)
 
             return result
 
@@ -235,9 +235,17 @@ class DataProcessor:
         if cached_close:
             return float(cached_close)
 
-        # Query database - get just the close price value
-        # Skip database query for now to avoid session issues
-        # TODO: Fix this properly
+        # Query database for latest price
+        try:
+            latest_price = self.database.get_latest_price(symbol)
+            if latest_price:
+                # Get the close price value and cache it
+                close_price = latest_price.close
+                await self.cache.set(f"prev_close:{symbol}", close_price, ttl=3600)  # Cache for 1 hour
+                return close_price
+        except Exception as e:
+            logger.debug(f"Could not get previous close for {symbol}: {e}")
+
         return None
 
     async def _get_or_fetch_historical_data(self, symbol: str) -> Optional[pd.DataFrame]:
@@ -254,19 +262,7 @@ class DataProcessor:
             return None
 
         # Convert to DataFrame
-        data = pd.DataFrame(
-            [
-                {
-                    "timestamp": p.timestamp,
-                    "open": p.open,
-                    "high": p.high,
-                    "low": p.low,
-                    "close": p.close,
-                    "volume": p.volume,
-                }
-                for p in price_history
-            ]
-        )
+        data = pd.DataFrame(price_history)
 
         if data.empty:
             return None
@@ -362,7 +358,10 @@ class DataProcessor:
                 "volume": result.volume,
             }
 
-            self.database.save_price_data([price_data])
+            # Run database operations in thread pool to avoid blocking
+            import asyncio
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, self.database.save_price_data, [price_data])
 
             # Also save technical indicators if available
             if result.technical_signals:
@@ -375,7 +374,7 @@ class DataProcessor:
                             "value": value,
                             "signal": result.technical_signals.get(f"{indicator_name}_signal"),
                         }
-                        self.database.save_indicator(indicator_data)
+                        await loop.run_in_executor(None, self.database.save_indicator, indicator_data)
 
         except Exception as e:
             logger.error(f"Error saving price data for {result.symbol}: {e}")

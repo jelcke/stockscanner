@@ -155,17 +155,31 @@ class Database:
                 .first()
             )
 
-    def get_price_history(self, symbol: str, days: int = 30) -> list[PriceData]:
+    def get_price_history(self, symbol: str, days: int = 30) -> list[dict[str, Any]]:
         """Get price history for a symbol"""
         cutoff_date = datetime.utcnow() - timedelta(days=days)
 
         with self.get_session() as session:
-            return (
+            price_data = (
                 session.query(PriceData)
                 .filter(and_(PriceData.symbol == symbol, PriceData.timestamp >= cutoff_date))
                 .order_by(PriceData.timestamp)
                 .all()
             )
+            
+            # Convert to dictionaries to avoid session issues
+            return [
+                {
+                    "symbol": p.symbol,
+                    "timestamp": p.timestamp,
+                    "open": p.open,
+                    "high": p.high,
+                    "low": p.low,
+                    "close": p.close,
+                    "volume": p.volume,
+                }
+                for p in price_data
+            ]
 
     # Scan results CRUD operations
     def save_scan_result(self, scan_result: dict[str, Any]) -> ScanResult:

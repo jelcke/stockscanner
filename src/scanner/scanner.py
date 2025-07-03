@@ -217,13 +217,13 @@ class StockScanner:
                 logger.debug(f"Using cached result for {symbol}")
                 return cached_result
 
-            # Subscribe to market data
-            ticker = await self.ib_manager.subscribe_market_data(symbol)
+            # Subscribe to market data (use snapshot for faster results)
+            ticker = await self.ib_manager.subscribe_market_data(symbol, snapshot=True)
             if not ticker:
                 return None
 
             # Wait for data to populate (with timeout)
-            await self._wait_for_ticker_data(ticker, timeout=5.0)
+            await self._wait_for_ticker_data(ticker, timeout=10.0)  # Increased timeout for delayed data
 
             # Process the ticker data
             result = await self.data_processor.process_ticker(ticker)
@@ -247,7 +247,12 @@ class StockScanner:
                 return  # Data is ready
             await asyncio.sleep(0.1)
 
-        logger.warning(f"Timeout waiting for data for {ticker.contract.symbol}")
+        # Log what data we have when timeout occurs
+        logger.warning(
+            f"Timeout waiting for data for {ticker.contract.symbol}. "
+            f"last={ticker.last}, volume={ticker.volume}, "
+            f"bid={ticker.bid}, ask={ticker.ask}"
+        )
 
     async def _evaluate_criteria(self, result: ScannerResult, criteria: list[Any]) -> bool:
         """
